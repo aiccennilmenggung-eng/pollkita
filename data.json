@@ -1,0 +1,95 @@
+{
+  "polls": [
+    {
+      "id": "8c3425e3",
+      "question": "makan siang di mana",
+      "options": [
+        {
+          "id": 1,
+          "text": "burjo",
+          "votes": 1
+        },
+        {
+          "id": 2,
+          "text": "kantin",
+          "votes": 1
+        }
+      ],
+      "voters": {
+        "fb42c8c6-f16c-475f-882b-3710cf39f8bb": 1,
+        "e8b87048-8120-4ccd-9c17-6dab95f20502": 2
+      },
+      "owner": "fb42c8c6-f16c-475f-882b-3710cf39f8bb",
+      "closed": true,
+      "createdAt": 1793749919157
+    },
+    {
+      "id": "71a0a3e7",
+      "question": "makan siang di mana",
+      "options": [
+        {
+          "id": 1,
+          "text": "kantin",
+          "votes": 1
+        },
+        {
+          "id": 2,
+          "text": "burjo",
+          "votes": 1
+        }
+      ],
+      "voters": {
+        "17b45898-71c2-4a3c-b36f-f1327381dd96": 1,
+        "3ed9bb6f-57cd-4995-8ff0-302b6930a13d": 2
+      },
+      "owner": "8eebaa7c-69e8-48b1-b2fa-3d2bfa3d30f8",
+      "closed": false,
+      "createdAt": 1793754035627
+    },
+    {
+      "id": "42a46606",
+      "question": "main di mana",
+      "options": [
+        {
+          "id": 1,
+          "text": "jogja",
+          "votes": 1
+        },
+        {
+          "id": 2,
+          "text": "solo",
+          "votes": 0
+        }
+      ],
+      "voters": {
+        "8eebaa7c-69e8-48b1-b2fa-3d2bfa3d30f8": 1
+      },
+      "owner": "17b45898-71c2-4a3c-b36f-f1327381dd96",
+      "closed": false,
+      "createdAt": 1793754121292
+    },
+    {
+      "id": "97cd061b",
+      "question": "makan siang apa?",
+      "options": [
+        {
+          "id": 1,
+          "text": "nasi",
+          "votes": 0
+        },
+        {
+          "id": 2,
+          "text": "selain nasi",
+          "votes": 2
+        }
+      ],
+      "voters": {
+        "fb42c8c6-f16c-475f-882b-3710cf39f8bb": 2,
+        "4e7b2c79-3f0b-47e1-96d3-75a20259f4f3": 2
+      },
+      "owner": "2cd4e5dc-fc52-4f40-a182-c6dedd41d490",
+      "closed": true,
+      "createdAt": 1794927780627
+    }
+  ]
+}
