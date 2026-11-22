@@ -34,14 +34,6 @@ function timeAgo(ts) {
   return `${Math.floor(s / 86400)} hari lalu`;
 }
 
-function toSlug(text) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40);
-}
 
 // ---------- Tampilan: buat polling ----------
 function renderCreate() {
@@ -66,14 +58,6 @@ function renderCreate() {
     placeholder: 'Contoh: Makan siang enaknya apa?',
     maxlength: 200,
   });
-
-  // BARU: kolom kata kunci
-  const slugInput = h('input', {
-    type: 'text',
-    placeholder: 'Contoh: makan-siang (kosongkan untuk acak)',
-    maxlength: 40,
-  });
-
   addOption();
   addOption();
 
@@ -87,11 +71,7 @@ function renderCreate() {
         try {
           const poll = await api('/api/polls', {
             method: 'POST',
-            body: {
-              question: question.value,
-              options: optionInputs.map((i) => i.value),
-              slug: toSlug(slugInput.value), // BARU
-            },
+            body: { question: question.value, options: optionInputs.map((i) => i.value) },
           });
           location.hash = `#/poll/${poll.id}`;
         } catch (err) {
@@ -100,12 +80,9 @@ function renderCreate() {
       },
     },
     h('h2', {}, 'Buat Polling Baru'),
-    h('p', { class: 'meta' }, 'Tulis pertanyaan, tambahkan pilihan, lalu bagikan kata kuncinya ke teman-temanmu.'),
+    h('p', { class: 'meta' }, 'Tulis pertanyaan, tambahkan pilihan, lalu bagikan tautannya ke teman-temanmu.'),
     h('label', {}, 'Pertanyaan'),
     question,
-    h('label', {}, 'Kata kunci (opsional)'),          // BARU
-    slugInput,                                         // BARU
-    h('p', { class: 'meta' }, 'Orang lain bisa membuka polling ini dengan mengetik kata kunci tersebut.'), // BARU
     h('label', {}, 'Pilihan jawaban (2-10)'),
     optionsBox,
     h('div', { class: 'row' },
@@ -114,27 +91,7 @@ function renderCreate() {
     ),
     errorBox
   );
-
-  // BARU: form untuk membuka polling lewat kata kunci
-  const openInput = h('input', { type: 'text', placeholder: 'Ketik kata kunci polling…' });
-
-  const openForm = h(
-    'form',
-    {
-      class: 'card',
-      onsubmit: (e) => {
-        e.preventDefault();
-        const slug = toSlug(openInput.value);
-        if (slug) location.hash = `#/poll/${slug}`;
-      },
-    },
-    h('h2', {}, 'Buka Polling'),
-    h('p', { class: 'meta' }, 'Sudah punya kata kunci? Ketik di sini.'),
-    openInput,
-    h('div', { class: 'row' }, h('button', { type: 'submit' }, 'Buka'))
-  );
-
-  app.replaceChildren(openForm, form); // BERUBAH: sebelumnya hanya (form)
+  app.replaceChildren(form);
 }
 
 // ---------- Tampilan: detail polling ----------
@@ -229,7 +186,7 @@ async function renderPoll(id) {
 
 // ---------- Router ----------
 function route() {
-  const m = /^#\/poll\/([a-z0-9-]+)$/.exec(location.hash || '');
+  const m = /^#\/poll\/([a-f0-9]+)$/.exec(location.hash || '');
   if (m) return renderPoll(m[1]);
   return renderCreate();
 }

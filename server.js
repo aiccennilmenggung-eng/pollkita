@@ -120,24 +120,10 @@ async function handleApi(req, res, pathname, vid) {
     if (new Set(options.map((o) => o.toLowerCase())).size !== options.length)
       return send(res, 400, { error: 'Pilihan tidak boleh sama.' });
 
-    // Kata kunci buatan pengguna (opsional)
-    const slug = String(body.slug || '').trim();
-    let id;
-    if (slug) {
-      if (!/^[a-z0-9-]{3,40}$/.test(slug))
-        return send(res, 400, { error: 'Kata kunci 3-40 karakter: huruf kecil, angka, tanda hubung.' });
-      if (findPoll(slug))
-        return send(res, 409, { error: 'Kata kunci sudah dipakai, coba yang lain.' });
-      id = slug;
-    } else {
-      do {
-        id = crypto.randomBytes(4).toString('hex');
-      } while (findPoll(id));
-    }
 
 
     const poll = {
-      id,
+            id: crypto.randomBytes(4).toString('hex'),
       question,
       options: options.map((text, i) => ({ id: i + 1, text, votes: 0 })),
       voters: {}, // { vid: optionId }
@@ -152,7 +138,7 @@ async function handleApi(req, res, pathname, vid) {
   }
 
   // Rute dengan id: /api/polls/:id[/aksi]
-  const m = /^\/api\/polls\/([a-z0-9-]+)(?:\/(vote|close))?$/.exec(pathname);
+  const m = /^\/api\/polls\/([a-f0-9]+)(?:\/(vote|close))?$/.exec(pathname);
   if (!m) return send(res, 404, { error: 'Tidak ditemukan.' });
   const p = findPoll(m[1]);
   if (!p) return send(res, 404, { error: 'Polling tidak ditemukan.' });
