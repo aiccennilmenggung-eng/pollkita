@@ -2,10 +2,10 @@
 // (Firebase Console → Project settings → Your apps → Web app → firebaseConfig).
 // Nilai di bawah hanyalah contoh dan HARUS diganti.
 export const firebaseConfig = {
-  apiKey: 'GANTI_DENGAN_API_KEY',
-  authDomain: 'GANTI.firebaseapp.com',
-  projectId: 'GANTI',
-  storageBucket: 'GANTI.firebasestorage.app',
-  messagingSenderId: 'GANTI',
-  appId: 'GANTI',
+  apiKey: 'AIzaSyAMJ9tiPIdlG-XInb4uO5Ou-tg-7ultu94',
+  authDomain: 'pollkita.firebaseapp.com',
+  projectId: 'pollkita',
+  storageBucket: 'pollkita.firebasestorage.app',
+  messagingSenderId: '372239852354',
+  appId: '1:372239852354:web:59de6208567adee328dedb',
 };
