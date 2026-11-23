@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /polls/{pollId} {
+      // Polling hanya bisa dibuka jika tahu id-nya (tautannya); daftar semua polling dilarang.
+      allow get: if true;
+      allow list: if false;
+
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['question', 'options', 'ownerUid', 'closed', 'createdAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.closed == false
+        && request.resource.data.question is string
+        && request.resource.data.question.size() >= 3
+        && request.resource.data.question.size() <= 200
+        && request.resource.data.options is list
+        && request.resource.data.options.size() >= 2
+        && request.resource.data.options.size() <= 10
+        && request.resource.data.createdAt == request.time;
+
+      // Pembuat hanya boleh mengubah status "closed"
+      allow update: if request.auth != null
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['closed']);
+
+      allow delete: if request.auth != null
+        && resource.data.ownerUid == request.auth.uid;
+
+      match /votes/{uid} {
+        allow read: if true;
+
+        // Satu akun = satu dokumen suara; tidak bisa diubah setelah dibuat.
+        allow create: if request.auth != null
+          && request.auth.uid == uid
+          && !get(/databases/$(database)/documents/polls/$(pollId)).data.closed
+          && request.resource.data.keys().hasOnly(['choice'])
+          && request.resource.data.choice is int
+          && request.resource.data.choice >= 0
+          && request.resource.data.choice < get(/databases/$(database)/documents/polls/$(pollId)).data.options.size();
+
+        allow update: if false;
+
+        // Hanya pembuat polling yang boleh menghapus suara (saat menghapus polling)
+        allow delete: if request.auth != null
+          && get(/databases/$(database)/documents/polls/$(pollId)).data.ownerUid == request.auth.uid;
+      }
+    }
+  }
+}
