@@ -12,7 +12,7 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(160deg, #a5d8ff 0%, #d0bfff 50%, #ffc9c9 100%);
+background: linear-gradient(160deg, #ece6fb 0%, #fbe9f1 55%, #ffeede 100%);
 min-height: 100vh;
   color: var(--text);
 }
