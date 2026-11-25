@@ -76,10 +76,17 @@ button.option:hover:not(:disabled) { border-color: var(--primary); }
 .option.mine { border-color: var(--primary); font-weight: 600; }
 .empty { text-align: center; color: var(--muted); padding: 40px 0; }
 
-body:before {
+body::before {
   content: "📊 🗳️ ✅";
   position: fixed; right: 18px; bottom: 14px;
-  font-size: 1.6rem; opacity: .25; pointer-events: none;
+  font-size: 2.6rem;
+  letter-spacing: 6px;
+  opacity: .9;
+  filter: saturate(1.4) drop-shadow(0 4px 8px rgba(59, 91, 219, 0.25));
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  body::before { font-size: 1.8rem; right: 10px; bottom: 8px; }
 }
 
 .card {
