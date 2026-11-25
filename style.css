@@ -12,7 +12,9 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-background: linear-gradient(160deg, #e3efff 0%, #eee8ff 55%, #fdeaf1 100%);
+background: linear-gradient(120deg, #e3efff, #eee8ff, #fdeaf1, #e1f5ec, #e3efff);
+background-size: 400% 400%;
+animation: geser-warna 180s ease infinite;
 min-height: 100vh;
   color: var(--text);
 }
@@ -85,3 +87,12 @@ body:before {
   transition: transform .15s, box-shadow .15s;
 }
 .card:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(59, 91, 219, 0.14); }
+
+@keyframes geser-warna {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body { animation: none; }
+}
