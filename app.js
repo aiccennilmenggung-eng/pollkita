@@ -185,6 +185,12 @@ function renderPoll(id) {
     }, 'Bagikan tautan');
 
     const ownerBtns = isOwner
+          const waBtn = h('a', {
+      class: 'btn secondary',
+      href: 'https://wa.me/?text=' + encodeURIComponent('Ayo ikut polling: "' + poll.question + '"\n' + location.href),
+      target: '_blank',
+      rel: 'noopener',
+    }, 'Bagikan ke WhatsApp');
       ? [
           !poll.closed && h('button', {
             class: 'secondary',
@@ -226,7 +232,7 @@ function renderPoll(id) {
         h('div', { style: 'margin-top:14px' }, optionEls),
         !showResults && h('div', { class: 'meta' }, 'Pilih salah satu untuk memberi suara dan melihat hasil.'),
         errorBox,
-        h('div', { class: 'row' }, shareBtn, ownerBtns))
+        h('div', { class: 'row' }, shareBtn, waBtn, ownerBtns))
     );
   }
 
