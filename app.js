@@ -1,7 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
-  getFirestore, doc, collection, setDoc, deleteDoc, updateDoc, getDocs, onSnapshot, serverTimestamp, writeBatch,
+  getFirestore, doc, collection, setDoc, deleteDoc, updateDoc, getDocs, onSnapshot, serverTimestamp, writeBatch, Timestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.js';
 
@@ -29,6 +29,29 @@ function timeAgo(ts) {
   if (s < 86400) return `${Math.floor(s / 3600)} jam lalu`;
   return `${Math.floor(s / 86400)} hari lalu`;
 }
+
+function sisaWaktu(ms) {
+  const m = Math.ceil(ms / 60000);
+  if (m < 1) return 'kurang dari 1 menit';
+  if (m < 60) return `${m} menit`;
+  const j = Math.floor(m / 60);
+  if (j < 24) return `${j} jam ${m % 60} menit`;
+  return `${Math.floor(j / 24)} hari ${j % 24} jam`;
+}
+
+function fmtTanggal(ms) {
+  return new Date(ms).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+// Pilihan batas waktu polling: [lama dalam milidetik, tulisan]
+const DURASI = [
+  ['0', 'Tanpa batas waktu'],
+  ['3600000', '1 jam'],
+  ['21600000', '6 jam'],
+  ['86400000', '1 hari'],
+  ['259200000', '3 hari'],
+  ['604800000', '7 hari'],
+];
 
 function randomId() {
   const b = crypto.getRandomValues(new Uint8Array(4));
@@ -81,6 +104,7 @@ function renderCreate() {
   });
   addOption();
   addOption();
+  const durasi = h('select', {}, DURASI.map(([v, label]) => h('option', { value: v }, label)));
 
   const form = h(
     'form',
@@ -103,6 +127,7 @@ function renderCreate() {
             options,
             ownerUid: uid,
             closed: false,
+            endsAt: Number(durasi.value) > 0 ? Timestamp.fromMillis(Date.now() + Number(durasi.value)) : null,
             createdAt: serverTimestamp(),
           });
           location.hash = `#/poll/${id}`;
@@ -118,6 +143,8 @@ function renderCreate() {
     question,
     h('label', {}, 'Pilihan jawaban (2-10)'),
     optionsBox,
+    h('label', {}, 'Batas waktu polling'),
+    durasi,
     h('div', { class: 'row' },
       h('button', { type: 'button', class: 'secondary', onclick: () => addOption() }, '+ Tambah pilihan'),
       h('button', { type: 'submit' }, 'Buat Polling')
@@ -134,6 +161,7 @@ function renderPoll(id) {
   let votes = [];       // [{uid, choice}]
   let gotPoll = false;
   let gotVotes = false;
+  let expiryTimer = null;
   const errorBox = h('div', { class: 'error' });
 
   const notFound = () =>
@@ -147,7 +175,16 @@ function renderPoll(id) {
     const counts = poll.options.map((_, i) => votes.filter((v) => v.choice === i).length);
     const mine = votes.find((v) => v.uid === uid);
     const myVote = mine ? mine.choice : null;
-    const showResults = myVote !== null || poll.closed;
+    const endMs = poll.endsAt ? poll.endsAt.toMillis() : null;
+    const expired = endMs !== null && endMs <= Date.now();
+    const isClosed = poll.closed || expired;
+    const showResults = myVote !== null || isClosed;
+
+    // Gambar ulang tepat saat batas waktu tercapai
+    clearTimeout(expiryTimer);
+    if (endMs !== null && !isClosed) {
+      expiryTimer = setTimeout(draw, Math.min(endMs - Date.now() + 300, 2000000000));
+    }
     const isOwner = poll.ownerUid === uid;
 
     const optionEls = poll.options.map((text, i) => {
@@ -166,7 +203,7 @@ function renderPoll(id) {
             await setDoc(doc(db, 'polls', id, 'votes', uid), { choice: i });
           } catch (err) {
             console.error(err);
-            errorBox.textContent = 'Gagal memberi suara. Polling mungkin sudah ditutup.';
+            errorBox.textContent = 'Gagal memberi suara. Polling mungkin sudah ditutup atau waktunya habis.';
           }
         },
       }, h('div', { class: 'label' }, h('span', {}, text)));
@@ -190,8 +227,10 @@ function renderPoll(id) {
       target: '_blank',
       rel: 'noopener',
     }, 'Bagikan ke WhatsApp');
-    const ownerBtns = isOwner? [
-          !poll.closed && h('button', {
+
+    const ownerBtns = isOwner
+      ? [
+          !isClosed && h('button', {
             class: 'secondary',
             onclick: async () => {
               if (confirm('Tutup polling ini? Orang tidak bisa memberi suara lagi.')) {
@@ -227,7 +266,10 @@ function renderPoll(id) {
         h('h2', {}, poll.question),
         h('div', { class: 'meta' },
           `${total} suara · ${timeAgo(createdMs)} `,
-          h('span', { class: poll.closed ? 'badge closed' : 'badge' }, poll.closed ? 'Ditutup' : 'Aktif')),
+          h('span', { class: isClosed ? 'badge closed' : 'badge' }, poll.closed ? 'Ditutup' : expired ? 'Waktu habis' : 'Aktif'),
+          endMs !== null && (expired
+            ? ` · Berakhir ${fmtTanggal(endMs)}`
+            : ` · Berakhir ${sisaWaktu(endMs - Date.now())} lagi`)),
         h('div', { style: 'margin-top:14px' }, optionEls),
         !showResults && h('div', { class: 'meta' }, 'Pilih salah satu untuk memberi suara dan melihat hasil.'),
         errorBox,
@@ -252,6 +294,12 @@ function renderPoll(id) {
       draw();
     }, onErr)
   );
+
+  // Perbarui tulisan "berakhir ... lagi" tiap 30 detik
+  const ticker = setInterval(() => {
+    if (gotPoll && gotVotes && poll && poll.endsAt && !poll.closed) draw();
+  }, 30000);
+  unsubscribers.push(() => clearInterval(ticker), () => clearTimeout(expiryTimer));
 }
 
 // ---------- Router ----------
